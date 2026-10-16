@@ -70,13 +70,13 @@ async function seedUsers(rounds: number) {
   const users = [
     {
       email: env('SEED_ADMIN_EMAIL', 'admin@zidni.local').toLowerCase(),
-      password: env('SEED_ADMIN_PASSWORD', 'Admin#12345'),
+      password: env('SEED_ADMIN_PASSWORD', 'Admin@12345'),
       name: 'Catalog Admin',
       role: Role.ADMIN,
     },
     {
       email: env('SEED_USER_EMAIL', 'user@zidni.local').toLowerCase(),
-      password: env('SEED_USER_PASSWORD', 'User#123456'),
+      password: env('SEED_USER_PASSWORD', 'User@123456'),
       name: 'Regular User',
       role: Role.USER,
     },
