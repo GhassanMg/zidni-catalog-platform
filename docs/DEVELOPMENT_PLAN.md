@@ -95,4 +95,23 @@ flowchart LR
 
 ## Refinements during implementation
 
-_(filled in at the end of the build)_
+The plan held. These are the changes made while building, and why:
+
+| Area | Plan | Built | Why |
+| --- | --- | --- | --- |
+| Versions | "latest" | Nest 11.2, Prisma 6.19 pinned | `latest` resolved to a Prisma 8 release candidate and a just-released Nest 12 |
+| Permissions | Admin-only audit & key endpoints | Explicit `AUDIT_READ` / `API_CLIENTS_MANAGE` permissions | Same permission model for every route; `AUDIT_READ` can be granted to an agent, `API_CLIENTS_MANAGE` never |
+| API keys | prefix, hash, permissions, revoke | + `expires_at`, unique `name`, `ON DELETE SET NULL` creator | Time-boxed agent access; readable audit labels; deleting a user does not break agents |
+| Audit | SUCCESS/FAILURE rows | + `ANONYMOUS` actor type, DB trigger making `audit_logs` append-only, `changedFields`, `alreadyLinked`/`notLinked` | Unauthenticated write attempts are audited too; the log is tamper-resistant; entries say exactly what changed |
+| Search indexes | B-tree on `name` | GIN trigram (`pg_trgm`) on product/category names | `contains` search (`ILIKE '%x%'`) cannot use a B-tree |
+| Category names | `name`/`slug` unique | Uniqueness on a Unicode-aware slug (3rd migration) | Arabic names produced empty slugs; "Home & Garden" vs "home garden" must conflict |
+| Link endpoints | relationship endpoints | `PATCH {add, remove}`, `PUT {productIds}`, `DELETE /:productId`, all row-locked | Incremental and declarative semantics; concurrent edits serialised |
+| MCP tools | 11 tools | + `list_audit_logs` (for agents granted `AUDIT_READ`); one `tools.ts` instead of `tools/*` | Agents can inspect their own trail; 12 declarative definitions fit in one readable file |
+| MCP reliability | — | GET-only retries, explicit "write outcome unknown" on timeouts, stateless HTTP with a key per request | Never replay writes; one deployment serves many isolated agents |
+| Branch order | catalog before audit | `feat/audit-log` before `feat/catalog` | Catalog services write audit entries inside their transactions |
+| Docker | postgres on 5432 | Default host port 5433, all ports overridable via `.env`; `tests` compose profile | Avoid clashing with an existing local Postgres; tests runnable without local Node |
+| Docs | `openapi.json` | + `mcp-tools.json`, `npm run docs:export` regenerates both | Tool schemas published exactly as agents receive them |
+
+Final verification: lint and typecheck clean; 262 tests (71 unit, 174 REST e2e, 17 MCP e2e)
+passing locally and inside Docker; production images started and smoke-tested (migrations, seed,
+login, RBAC, MCP over HTTP).

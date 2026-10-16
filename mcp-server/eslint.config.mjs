@@ -14,4 +14,8 @@ export default tseslint.config(
       'no-console': ['error', { allow: ['error'] }],
     },
   },
+  {
+    files: ['scripts/**/*.ts'],
+    rules: { 'no-console': 'off' },
+  },
 );

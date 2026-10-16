@@ -1,0 +1,516 @@
+{
+  "server": {
+    "name": "zidni-catalog",
+    "version": "1.0.0"
+  },
+  "tools": [
+    {
+      "name": "whoami",
+      "title": "Who am I",
+      "description": "Returns the identity this MCP session acts as and the permissions granted to it. Call this first if unsure what you are allowed to do.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {},
+        "$schema": "http://json-schema.org/draft-07/schema#",
+        "additionalProperties": false
+      },
+      "annotations": {
+        "title": "Who am I",
+        "readOnlyHint": true,
+        "openWorldHint": false
+      },
+      "execution": {
+        "taskSupport": "forbidden"
+      },
+      "x-required-permission": null
+    },
+    {
+      "name": "list_categories",
+      "title": "List categories",
+      "description": "Paginated list of categories (name, slug, description, productCount). Use get_category for the linked products.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "search": {
+            "description": "Case-insensitive match on name/description",
+            "type": "string",
+            "maxLength": 100
+          },
+          "page": {
+            "description": "Page number, starting at 1 (default 1)",
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 9007199254740991
+          },
+          "limit": {
+            "description": "Page size, 1-100 (default 20)",
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 100
+          }
+        },
+        "$schema": "http://json-schema.org/draft-07/schema#",
+        "additionalProperties": false
+      },
+      "annotations": {
+        "title": "List categories",
+        "readOnlyHint": true,
+        "openWorldHint": false
+      },
+      "execution": {
+        "taskSupport": "forbidden"
+      },
+      "x-required-permission": "CATEGORIES_READ"
+    },
+    {
+      "name": "get_category",
+      "title": "Get category",
+      "description": "A single category including every linked product (id, sku, name, price, isActive).",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12})$",
+            "description": "Category UUID"
+          }
+        },
+        "required": [
+          "id"
+        ],
+        "$schema": "http://json-schema.org/draft-07/schema#",
+        "additionalProperties": false
+      },
+      "annotations": {
+        "title": "Get category",
+        "readOnlyHint": true,
+        "openWorldHint": false
+      },
+      "execution": {
+        "taskSupport": "forbidden"
+      },
+      "x-required-permission": "CATEGORIES_READ"
+    },
+    {
+      "name": "list_products",
+      "title": "List products",
+      "description": "Paginated list of products, each with its categories. Filter by text, category or active flag.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "search": {
+            "description": "Case-insensitive match on name/SKU/description",
+            "type": "string",
+            "maxLength": 100
+          },
+          "categoryId": {
+            "type": "string",
+            "format": "uuid",
+            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12})$",
+            "description": "Only products in this category UUID"
+          },
+          "isActive": {
+            "type": "boolean"
+          },
+          "page": {
+            "description": "Page number, starting at 1 (default 1)",
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 9007199254740991
+          },
+          "limit": {
+            "description": "Page size, 1-100 (default 20)",
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 100
+          }
+        },
+        "$schema": "http://json-schema.org/draft-07/schema#",
+        "additionalProperties": false
+      },
+      "annotations": {
+        "title": "List products",
+        "readOnlyHint": true,
+        "openWorldHint": false
+      },
+      "execution": {
+        "taskSupport": "forbidden"
+      },
+      "x-required-permission": "PRODUCTS_READ"
+    },
+    {
+      "name": "get_product",
+      "title": "Get product",
+      "description": "A single product including all of its categories.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12})$",
+            "description": "Product UUID"
+          }
+        },
+        "required": [
+          "id"
+        ],
+        "$schema": "http://json-schema.org/draft-07/schema#",
+        "additionalProperties": false
+      },
+      "annotations": {
+        "title": "Get product",
+        "readOnlyHint": true,
+        "openWorldHint": false
+      },
+      "execution": {
+        "taskSupport": "forbidden"
+      },
+      "x-required-permission": "PRODUCTS_READ"
+    },
+    {
+      "name": "create_category",
+      "title": "Create category",
+      "description": "Creates a category, optionally linking existing products. Names must be unique (case/punctuation-insensitive).",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "minLength": 2,
+            "maxLength": 100
+          },
+          "description": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 2000
+          },
+          "productIds": {
+            "minItems": 0,
+            "maxItems": 500,
+            "type": "array",
+            "items": {
+              "type": "string",
+              "format": "uuid",
+              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12})$"
+            },
+            "description": "Products to link UUIDs (duplicates are ignored, max 500)"
+          }
+        },
+        "required": [
+          "name",
+          "description"
+        ],
+        "$schema": "http://json-schema.org/draft-07/schema#",
+        "additionalProperties": false
+      },
+      "annotations": {
+        "title": "Create category",
+        "readOnlyHint": false,
+        "destructiveHint": false,
+        "idempotentHint": false,
+        "openWorldHint": false
+      },
+      "execution": {
+        "taskSupport": "forbidden"
+      },
+      "x-required-permission": "CATEGORIES_WRITE"
+    },
+    {
+      "name": "update_category",
+      "title": "Update category",
+      "description": "Changes the name and/or description of a category. Provide at least one of them.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12})$",
+            "description": "Category UUID"
+          },
+          "name": {
+            "type": "string",
+            "minLength": 2,
+            "maxLength": 100
+          },
+          "description": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 2000
+          }
+        },
+        "required": [
+          "id"
+        ],
+        "$schema": "http://json-schema.org/draft-07/schema#",
+        "additionalProperties": false
+      },
+      "annotations": {
+        "title": "Update category",
+        "readOnlyHint": false,
+        "destructiveHint": false,
+        "idempotentHint": true,
+        "openWorldHint": false
+      },
+      "execution": {
+        "taskSupport": "forbidden"
+      },
+      "x-required-permission": "CATEGORIES_WRITE"
+    },
+    {
+      "name": "delete_category",
+      "title": "Delete category",
+      "description": "Deletes a category and its product links. The products themselves are NOT deleted.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12})$",
+            "description": "Category UUID"
+          }
+        },
+        "required": [
+          "id"
+        ],
+        "$schema": "http://json-schema.org/draft-07/schema#",
+        "additionalProperties": false
+      },
+      "annotations": {
+        "title": "Delete category",
+        "readOnlyHint": false,
+        "destructiveHint": true,
+        "idempotentHint": true,
+        "openWorldHint": false
+      },
+      "execution": {
+        "taskSupport": "forbidden"
+      },
+      "x-required-permission": "CATEGORIES_WRITE"
+    },
+    {
+      "name": "add_products_to_category",
+      "title": "Add products to category",
+      "description": "Links products to a category. Already-linked products are left as they are. Fails without changes if any product id does not exist.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "categoryId": {
+            "type": "string",
+            "format": "uuid",
+            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12})$",
+            "description": "Category UUID"
+          },
+          "productIds": {
+            "minItems": 1,
+            "maxItems": 500,
+            "type": "array",
+            "items": {
+              "type": "string",
+              "format": "uuid",
+              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12})$"
+            },
+            "description": "Products to link UUIDs (duplicates are ignored, max 500)"
+          }
+        },
+        "required": [
+          "categoryId",
+          "productIds"
+        ],
+        "$schema": "http://json-schema.org/draft-07/schema#",
+        "additionalProperties": false
+      },
+      "annotations": {
+        "title": "Add products to category",
+        "readOnlyHint": false,
+        "destructiveHint": false,
+        "idempotentHint": true,
+        "openWorldHint": false
+      },
+      "execution": {
+        "taskSupport": "forbidden"
+      },
+      "x-required-permission": "CATEGORIES_WRITE"
+    },
+    {
+      "name": "remove_products_from_category",
+      "title": "Remove products from category",
+      "description": "Unlinks products from a category. Products not currently linked are ignored.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "categoryId": {
+            "type": "string",
+            "format": "uuid",
+            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12})$",
+            "description": "Category UUID"
+          },
+          "productIds": {
+            "minItems": 1,
+            "maxItems": 500,
+            "type": "array",
+            "items": {
+              "type": "string",
+              "format": "uuid",
+              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12})$"
+            },
+            "description": "Products to unlink UUIDs (duplicates are ignored, max 500)"
+          }
+        },
+        "required": [
+          "categoryId",
+          "productIds"
+        ],
+        "$schema": "http://json-schema.org/draft-07/schema#",
+        "additionalProperties": false
+      },
+      "annotations": {
+        "title": "Remove products from category",
+        "readOnlyHint": false,
+        "destructiveHint": true,
+        "idempotentHint": true,
+        "openWorldHint": false
+      },
+      "execution": {
+        "taskSupport": "forbidden"
+      },
+      "x-required-permission": "CATEGORIES_WRITE"
+    },
+    {
+      "name": "set_category_products",
+      "title": "Set category products",
+      "description": "Replaces the complete set of products linked to a category (an empty list removes all links). Returns what was added and removed.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "categoryId": {
+            "type": "string",
+            "format": "uuid",
+            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12})$",
+            "description": "Category UUID"
+          },
+          "productIds": {
+            "minItems": 0,
+            "maxItems": 500,
+            "type": "array",
+            "items": {
+              "type": "string",
+              "format": "uuid",
+              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12})$"
+            },
+            "description": "The full set of products UUIDs (duplicates are ignored, max 500)"
+          }
+        },
+        "required": [
+          "categoryId",
+          "productIds"
+        ],
+        "$schema": "http://json-schema.org/draft-07/schema#",
+        "additionalProperties": false
+      },
+      "annotations": {
+        "title": "Set category products",
+        "readOnlyHint": false,
+        "destructiveHint": true,
+        "idempotentHint": true,
+        "openWorldHint": false
+      },
+      "execution": {
+        "taskSupport": "forbidden"
+      },
+      "x-required-permission": "CATEGORIES_WRITE"
+    },
+    {
+      "name": "list_audit_logs",
+      "title": "List audit logs",
+      "description": "Queries the append-only audit trail of write operations (newest first).",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "resourceType": {
+            "type": "string",
+            "enum": [
+              "PRODUCT",
+              "CATEGORY",
+              "USER",
+              "API_CLIENT"
+            ]
+          },
+          "resourceId": {
+            "type": "string",
+            "maxLength": 64
+          },
+          "actorId": {
+            "type": "string",
+            "format": "uuid",
+            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12})$",
+            "description": "Actor UUID"
+          },
+          "action": {
+            "type": "string",
+            "enum": [
+              "CREATE",
+              "UPDATE",
+              "DELETE",
+              "UPDATE_LINKS",
+              "SET_LINKS",
+              "REVOKE"
+            ]
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "SUCCESS",
+              "FAILURE"
+            ]
+          },
+          "channel": {
+            "type": "string",
+            "enum": [
+              "REST",
+              "MCP"
+            ]
+          },
+          "from": {
+            "description": "ISO-8601 lower bound",
+            "type": "string",
+            "format": "date-time",
+            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$"
+          },
+          "to": {
+            "description": "ISO-8601 upper bound",
+            "type": "string",
+            "format": "date-time",
+            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$"
+          },
+          "page": {
+            "description": "Page number, starting at 1 (default 1)",
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 9007199254740991
+          },
+          "limit": {
+            "description": "Page size, 1-100 (default 20)",
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 100
+          }
+        },
+        "$schema": "http://json-schema.org/draft-07/schema#",
+        "additionalProperties": false
+      },
+      "annotations": {
+        "title": "List audit logs",
+        "readOnlyHint": true,
+        "openWorldHint": false
+      },
+      "execution": {
+        "taskSupport": "forbidden"
+      },
+      "x-required-permission": "AUDIT_READ"
+    }
+  ]
+}

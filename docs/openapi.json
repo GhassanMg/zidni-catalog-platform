@@ -1,0 +1,2917 @@
+{
+  "openapi": "3.0.0",
+  "paths": {
+    "/api/v1/audit-logs": {
+      "get": {
+        "operationId": "AuditController_list",
+        "parameters": [
+          {
+            "name": "page",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "minimum": 1,
+              "default": 1,
+              "type": "number"
+            }
+          },
+          {
+            "name": "limit",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "minimum": 1,
+              "maximum": 100,
+              "default": 20,
+              "type": "number"
+            }
+          },
+          {
+            "name": "resourceType",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "$ref": "#/components/schemas/AuditResource"
+            }
+          },
+          {
+            "name": "resourceId",
+            "required": false,
+            "in": "query",
+            "description": "Usually a resource UUID",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "actorType",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "$ref": "#/components/schemas/ActorType"
+            }
+          },
+          {
+            "name": "actorId",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          },
+          {
+            "name": "action",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "$ref": "#/components/schemas/AuditAction"
+            }
+          },
+          {
+            "name": "status",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "$ref": "#/components/schemas/AuditStatus"
+            }
+          },
+          {
+            "name": "channel",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "$ref": "#/components/schemas/Channel"
+            }
+          },
+          {
+            "name": "from",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "example": "2026-10-01T00:00:00Z",
+              "type": "string"
+            }
+          },
+          {
+            "name": "to",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "example": "2026-12-31T23:59:59Z",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PaginatedAuditLogDto"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Validation failed or the request is malformed",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing, invalid, expired or revoked credentials",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Authenticated, but lacking the required permission",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "jwt": []
+          },
+          {
+            "api-key": []
+          }
+        ],
+        "summary": "Query the append-only audit trail (newest first)",
+        "tags": [
+          "Audit log"
+        ],
+        "x-required-permissions": [
+          "AUDIT_READ"
+        ]
+      }
+    },
+    "/api/v1/auth/register": {
+      "post": {
+        "operationId": "AuthController_register",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RegisterDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UserDto"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Validation failed or the request is malformed",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Conflicts with existing data (unique value, concurrent change, ...)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Too many requests",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "summary": "Self-register a normal (read-only) user account",
+        "tags": [
+          "Auth"
+        ]
+      }
+    },
+    "/api/v1/auth/login": {
+      "post": {
+        "operationId": "AuthController_login",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/LoginDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TokenResponseDto"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Validation failed or the request is malformed",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing, invalid, expired or revoked credentials",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Too many requests",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "summary": "Exchange e-mail/password for a short-lived JWT access token",
+        "tags": [
+          "Auth"
+        ]
+      }
+    },
+    "/api/v1/auth/me": {
+      "get": {
+        "operationId": "AuthController_me",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PrincipalDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing, invalid, expired or revoked credentials",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "jwt": []
+          },
+          {
+            "api-key": []
+          }
+        ],
+        "summary": "Describe the calling identity (user or agent) and its permissions",
+        "tags": [
+          "Auth"
+        ]
+      }
+    },
+    "/api/v1/api-clients": {
+      "post": {
+        "operationId": "ApiClientsController_create",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateApiClientDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CreatedApiClientDto"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Validation failed or the request is malformed",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing, invalid, expired or revoked credentials",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Authenticated, but lacking the required permission",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Conflicts with existing data (unique value, concurrent change, ...)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "jwt": []
+          },
+          {
+            "api-key": []
+          }
+        ],
+        "summary": "Issue an API key for an AI agent (the key is returned once)",
+        "tags": [
+          "API clients (AI agents)"
+        ],
+        "x-required-permissions": [
+          "API_CLIENTS_MANAGE"
+        ]
+      },
+      "get": {
+        "operationId": "ApiClientsController_list",
+        "parameters": [
+          {
+            "name": "page",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "minimum": 1,
+              "default": 1,
+              "type": "number"
+            }
+          },
+          {
+            "name": "limit",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "minimum": 1,
+              "maximum": 100,
+              "default": 20,
+              "type": "number"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PaginatedApiClientDto"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Validation failed or the request is malformed",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing, invalid, expired or revoked credentials",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Authenticated, but lacking the required permission",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "jwt": []
+          },
+          {
+            "api-key": []
+          }
+        ],
+        "summary": "List agent API clients (never includes key material)",
+        "tags": [
+          "API clients (AI agents)"
+        ],
+        "x-required-permissions": [
+          "API_CLIENTS_MANAGE"
+        ]
+      }
+    },
+    "/api/v1/api-clients/{id}": {
+      "delete": {
+        "operationId": "ApiClientsController_revoke",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": ""
+          },
+          "400": {
+            "description": "Validation failed or the request is malformed",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing, invalid, expired or revoked credentials",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Authenticated, but lacking the required permission",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Resource not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Conflicts with existing data (unique value, concurrent change, ...)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "jwt": []
+          },
+          {
+            "api-key": []
+          }
+        ],
+        "summary": "Revoke an agent API key (takes effect immediately)",
+        "tags": [
+          "API clients (AI agents)"
+        ],
+        "x-required-permissions": [
+          "API_CLIENTS_MANAGE"
+        ]
+      }
+    },
+    "/api/v1/categories": {
+      "get": {
+        "operationId": "CategoriesController_list",
+        "parameters": [
+          {
+            "name": "page",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "minimum": 1,
+              "default": 1,
+              "type": "number"
+            }
+          },
+          {
+            "name": "limit",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "minimum": 1,
+              "maximum": 100,
+              "default": 20,
+              "type": "number"
+            }
+          },
+          {
+            "name": "search",
+            "required": false,
+            "in": "query",
+            "description": "Case-insensitive match on name or description",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PaginatedCategoryDto"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Validation failed or the request is malformed",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing, invalid, expired or revoked credentials",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Authenticated, but lacking the required permission",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "jwt": []
+          },
+          {
+            "api-key": []
+          }
+        ],
+        "summary": "List categories (paginated, searchable) with product counts",
+        "tags": [
+          "Categories"
+        ],
+        "x-required-permissions": [
+          "CATEGORIES_READ"
+        ]
+      },
+      "post": {
+        "operationId": "CategoriesController_create",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateCategoryDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CategoryDetailDto"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Validation failed or the request is malformed",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing, invalid, expired or revoked credentials",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Authenticated, but lacking the required permission",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Conflicts with existing data (unique value, concurrent change, ...)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Referenced resources do not exist",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "jwt": []
+          },
+          {
+            "api-key": []
+          }
+        ],
+        "summary": "Create a category, optionally linking products",
+        "tags": [
+          "Categories"
+        ],
+        "x-required-permissions": [
+          "CATEGORIES_WRITE"
+        ]
+      }
+    },
+    "/api/v1/categories/{id}": {
+      "get": {
+        "operationId": "CategoriesController_findOne",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CategoryDetailDto"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Validation failed or the request is malformed",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing, invalid, expired or revoked credentials",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Authenticated, but lacking the required permission",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Resource not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "jwt": []
+          },
+          {
+            "api-key": []
+          }
+        ],
+        "summary": "Get a category with its linked products",
+        "tags": [
+          "Categories"
+        ],
+        "x-required-permissions": [
+          "CATEGORIES_READ"
+        ]
+      },
+      "patch": {
+        "operationId": "CategoriesController_update",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateCategoryDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CategoryDetailDto"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Validation failed or the request is malformed",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing, invalid, expired or revoked credentials",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Authenticated, but lacking the required permission",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Resource not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Conflicts with existing data (unique value, concurrent change, ...)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "jwt": []
+          },
+          {
+            "api-key": []
+          }
+        ],
+        "summary": "Update category name and/or description",
+        "tags": [
+          "Categories"
+        ],
+        "x-required-permissions": [
+          "CATEGORIES_WRITE"
+        ]
+      },
+      "delete": {
+        "description": "Removes the category and its product links. Linked products are NOT deleted.",
+        "operationId": "CategoriesController_remove",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": ""
+          },
+          "400": {
+            "description": "Validation failed or the request is malformed",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing, invalid, expired or revoked credentials",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Authenticated, but lacking the required permission",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Resource not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "jwt": []
+          },
+          {
+            "api-key": []
+          }
+        ],
+        "summary": "Delete a category",
+        "tags": [
+          "Categories"
+        ],
+        "x-required-permissions": [
+          "CATEGORIES_WRITE"
+        ]
+      }
+    },
+    "/api/v1/categories/{id}/products": {
+      "patch": {
+        "description": "Adding an already-linked product or removing a non-linked one is a no-op (reported in the audit entry).",
+        "operationId": "CategoriesController_updateProducts",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateCategoryProductsDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CategoryProductsResultDto"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Validation failed or the request is malformed",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing, invalid, expired or revoked credentials",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Authenticated, but lacking the required permission",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Resource not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Referenced resources do not exist",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "jwt": []
+          },
+          {
+            "api-key": []
+          }
+        ],
+        "summary": "Link and/or unlink specific products (atomic)",
+        "tags": [
+          "Categories"
+        ],
+        "x-required-permissions": [
+          "CATEGORIES_WRITE"
+        ]
+      },
+      "put": {
+        "operationId": "CategoriesController_setProducts",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SetCategoryProductsDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CategoryProductsResultDto"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Validation failed or the request is malformed",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing, invalid, expired or revoked credentials",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Authenticated, but lacking the required permission",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Resource not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Referenced resources do not exist",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "jwt": []
+          },
+          {
+            "api-key": []
+          }
+        ],
+        "summary": "Replace the complete set of linked products (atomic)",
+        "tags": [
+          "Categories"
+        ],
+        "x-required-permissions": [
+          "CATEGORIES_WRITE"
+        ]
+      }
+    },
+    "/api/v1/categories/{id}/products/{productId}": {
+      "delete": {
+        "operationId": "CategoriesController_removeProduct",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "productId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": ""
+          },
+          "400": {
+            "description": "Validation failed or the request is malformed",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing, invalid, expired or revoked credentials",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Authenticated, but lacking the required permission",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Resource not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "jwt": []
+          },
+          {
+            "api-key": []
+          }
+        ],
+        "summary": "Unlink a single product from the category",
+        "tags": [
+          "Categories"
+        ],
+        "x-required-permissions": [
+          "CATEGORIES_WRITE"
+        ]
+      }
+    },
+    "/api/v1/products": {
+      "get": {
+        "operationId": "ProductsController_list",
+        "parameters": [
+          {
+            "name": "page",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "minimum": 1,
+              "default": 1,
+              "type": "number"
+            }
+          },
+          {
+            "name": "limit",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "minimum": 1,
+              "maximum": 100,
+              "default": 20,
+              "type": "number"
+            }
+          },
+          {
+            "name": "search",
+            "required": false,
+            "in": "query",
+            "description": "Case-insensitive match on name, SKU or description",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "categoryId",
+            "required": false,
+            "in": "query",
+            "description": "Only products linked to this category",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          },
+          {
+            "name": "isActive",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "boolean"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PaginatedProductDto"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Validation failed or the request is malformed",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing, invalid, expired or revoked credentials",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Authenticated, but lacking the required permission",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "jwt": []
+          },
+          {
+            "api-key": []
+          }
+        ],
+        "summary": "List products with their categories (paginated, filterable)",
+        "tags": [
+          "Products"
+        ],
+        "x-required-permissions": [
+          "PRODUCTS_READ"
+        ]
+      },
+      "post": {
+        "operationId": "ProductsController_create",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateProductDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProductDto"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Validation failed or the request is malformed",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing, invalid, expired or revoked credentials",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Authenticated, but lacking the required permission",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Conflicts with existing data (unique value, concurrent change, ...)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Referenced resources do not exist",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "jwt": []
+          },
+          {
+            "api-key": []
+          }
+        ],
+        "summary": "Create a product, optionally linking categories",
+        "tags": [
+          "Products"
+        ],
+        "x-required-permissions": [
+          "PRODUCTS_WRITE"
+        ]
+      }
+    },
+    "/api/v1/products/{id}": {
+      "get": {
+        "operationId": "ProductsController_findOne",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProductDto"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Validation failed or the request is malformed",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing, invalid, expired or revoked credentials",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Authenticated, but lacking the required permission",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Resource not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "jwt": []
+          },
+          {
+            "api-key": []
+          }
+        ],
+        "summary": "Get a product with its categories",
+        "tags": [
+          "Products"
+        ],
+        "x-required-permissions": [
+          "PRODUCTS_READ"
+        ]
+      },
+      "patch": {
+        "description": "When `categoryIds` is present it replaces the full set of linked categories.",
+        "operationId": "ProductsController_update",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateProductDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProductDto"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Validation failed or the request is malformed",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing, invalid, expired or revoked credentials",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Authenticated, but lacking the required permission",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Resource not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Conflicts with existing data (unique value, concurrent change, ...)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Referenced resources do not exist",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "jwt": []
+          },
+          {
+            "api-key": []
+          }
+        ],
+        "summary": "Partially update a product",
+        "tags": [
+          "Products"
+        ],
+        "x-required-permissions": [
+          "PRODUCTS_WRITE"
+        ]
+      },
+      "delete": {
+        "description": "Removes the product and its category links. Categories are NOT deleted.",
+        "operationId": "ProductsController_remove",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": ""
+          },
+          "400": {
+            "description": "Validation failed or the request is malformed",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing, invalid, expired or revoked credentials",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Authenticated, but lacking the required permission",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Resource not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "jwt": []
+          },
+          {
+            "api-key": []
+          }
+        ],
+        "summary": "Delete a product",
+        "tags": [
+          "Products"
+        ],
+        "x-required-permissions": [
+          "PRODUCTS_WRITE"
+        ]
+      }
+    },
+    "/api/v1/health/live": {
+      "get": {
+        "operationId": "HealthController_live",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "example": {
+                    "status": "ok",
+                    "uptimeSeconds": 42
+                  }
+                }
+              }
+            }
+          }
+        },
+        "summary": "Liveness: the process is up and serving HTTP",
+        "tags": [
+          "Health"
+        ]
+      }
+    },
+    "/api/v1/health/ready": {
+      "get": {
+        "operationId": "HealthController_ready",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "example": {
+                    "status": "ok",
+                    "checks": {
+                      "database": "up"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Database unreachable"
+          }
+        },
+        "summary": "Readiness: dependencies (database) are reachable",
+        "tags": [
+          "Health"
+        ]
+      }
+    }
+  },
+  "info": {
+    "title": "Zidni Catalog API",
+    "description": "Product & category management with role/permission-based access control.\n\n**Authentication** — humans: `POST /auth/login` then `Authorization: Bearer <jwt>`. \nAI agents: `X-API-Key: zk_...` (or `Authorization: Bearer zk_...`).\n\n**Authorization** — every protected operation lists its required permissions under \n`x-required-permissions`. ADMIN has all permissions; USER is read-only; agents have exactly \nthe permissions granted to their key.\n\n**Errors** — all errors share one envelope: `{ statusCode, error, message, details?, path, timestamp, requestId }`.",
+    "version": "1.0.0",
+    "contact": {}
+  },
+  "tags": [],
+  "servers": [],
+  "components": {
+    "securitySchemes": {
+      "jwt": {
+        "scheme": "bearer",
+        "bearerFormat": "JWT",
+        "type": "http"
+      },
+      "api-key": {
+        "type": "apiKey",
+        "in": "header",
+        "name": "X-API-Key"
+      }
+    },
+    "schemas": {
+      "ErrorResponseDto": {
+        "type": "object",
+        "properties": {
+          "statusCode": {
+            "type": "number",
+            "example": 404
+          },
+          "error": {
+            "type": "string",
+            "example": "Not Found"
+          },
+          "message": {
+            "type": "string",
+            "example": "Category not found"
+          },
+          "details": {
+            "type": "object",
+            "description": "Structured details (validation errors, missing ids, conflicting fields, ...)",
+            "example": [
+              {
+                "field": "name",
+                "errors": [
+                  "name must be longer than or equal to 2 characters"
+                ]
+              }
+            ]
+          },
+          "path": {
+            "type": "string",
+            "example": "/api/v1/categories/9b2f..."
+          },
+          "timestamp": {
+            "type": "string",
+            "example": "2026-10-15T20:00:00.000Z"
+          },
+          "requestId": {
+            "type": "string",
+            "example": "1f0e7c1c-8b5e-4a4f-9a41-0b8f2b5c1d2e"
+          }
+        },
+        "required": [
+          "statusCode",
+          "error",
+          "message",
+          "path",
+          "timestamp",
+          "requestId"
+        ]
+      },
+      "AuditResource": {
+        "type": "string",
+        "enum": [
+          "PRODUCT",
+          "CATEGORY",
+          "USER",
+          "API_CLIENT"
+        ]
+      },
+      "ActorType": {
+        "type": "string",
+        "enum": [
+          "USER",
+          "AGENT",
+          "ANONYMOUS"
+        ]
+      },
+      "AuditAction": {
+        "type": "string",
+        "enum": [
+          "CREATE",
+          "UPDATE",
+          "DELETE",
+          "UPDATE_LINKS",
+          "SET_LINKS",
+          "REVOKE"
+        ]
+      },
+      "AuditStatus": {
+        "type": "string",
+        "enum": [
+          "SUCCESS",
+          "FAILURE"
+        ]
+      },
+      "Channel": {
+        "type": "string",
+        "enum": [
+          "REST",
+          "MCP"
+        ]
+      },
+      "AuditLogDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "action": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/AuditAction"
+              }
+            ]
+          },
+          "resourceType": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/AuditResource"
+              }
+            ]
+          },
+          "resourceId": {
+            "type": "string",
+            "nullable": true
+          },
+          "status": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/AuditStatus"
+              }
+            ]
+          },
+          "actorType": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/ActorType"
+              }
+            ]
+          },
+          "actorId": {
+            "type": "string",
+            "nullable": true,
+            "format": "uuid"
+          },
+          "actorLabel": {
+            "type": "string",
+            "nullable": true,
+            "example": "catalog-agent"
+          },
+          "channel": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/Channel"
+              }
+            ]
+          },
+          "requestId": {
+            "type": "string",
+            "nullable": true
+          },
+          "ipAddress": {
+            "type": "string",
+            "nullable": true
+          },
+          "changes": {
+            "type": "object",
+            "description": "{ before, after } snapshots of the resource",
+            "additionalProperties": true,
+            "nullable": true
+          },
+          "metadata": {
+            "type": "object",
+            "description": "Operation details (link diff, MCP tool, HTTP status and error for failures)",
+            "additionalProperties": true,
+            "nullable": true
+          },
+          "createdAt": {
+            "format": "date-time",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "action",
+          "resourceType",
+          "resourceId",
+          "status",
+          "actorType",
+          "actorId",
+          "actorLabel",
+          "channel",
+          "requestId",
+          "ipAddress",
+          "createdAt"
+        ]
+      },
+      "PaginationMetaDto": {
+        "type": "object",
+        "properties": {
+          "page": {
+            "type": "number",
+            "example": 1
+          },
+          "limit": {
+            "type": "number",
+            "example": 20
+          },
+          "total": {
+            "type": "number",
+            "example": 42
+          },
+          "totalPages": {
+            "type": "number",
+            "example": 3
+          }
+        },
+        "required": [
+          "page",
+          "limit",
+          "total",
+          "totalPages"
+        ]
+      },
+      "PaginatedAuditLogDto": {
+        "type": "object",
+        "properties": {
+          "data": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/AuditLogDto"
+            }
+          },
+          "meta": {
+            "$ref": "#/components/schemas/PaginationMetaDto"
+          }
+        },
+        "required": [
+          "data",
+          "meta"
+        ]
+      },
+      "RegisterDto": {
+        "type": "object",
+        "properties": {
+          "email": {
+            "type": "string",
+            "example": "jane@example.com",
+            "maxLength": 254
+          },
+          "name": {
+            "type": "string",
+            "example": "Jane Doe",
+            "minLength": 2,
+            "maxLength": 100
+          },
+          "password": {
+            "type": "string",
+            "example": "S3cure#Passw0rd",
+            "minLength": 8,
+            "maxLength": 72,
+            "description": "At least 8 characters, including a letter and a digit (max 72 bytes, bcrypt limit)."
+          }
+        },
+        "required": [
+          "email",
+          "name",
+          "password"
+        ]
+      },
+      "Role": {
+        "type": "string",
+        "enum": [
+          "ADMIN",
+          "USER"
+        ]
+      },
+      "UserDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "email": {
+            "type": "string",
+            "example": "jane@example.com"
+          },
+          "name": {
+            "type": "string",
+            "example": "Jane Doe"
+          },
+          "role": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/Role"
+              }
+            ]
+          },
+          "createdAt": {
+            "format": "date-time",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "email",
+          "name",
+          "role",
+          "createdAt"
+        ]
+      },
+      "LoginDto": {
+        "type": "object",
+        "properties": {
+          "email": {
+            "type": "string",
+            "example": "admin@zidni.local"
+          },
+          "password": {
+            "type": "string",
+            "example": "Admin@12345"
+          }
+        },
+        "required": [
+          "email",
+          "password"
+        ]
+      },
+      "TokenResponseDto": {
+        "type": "object",
+        "properties": {
+          "accessToken": {
+            "type": "string",
+            "description": "JWT access token; send as `Authorization: Bearer <token>`"
+          },
+          "tokenType": {
+            "type": "string",
+            "example": "Bearer"
+          },
+          "expiresIn": {
+            "type": "number",
+            "example": 900,
+            "description": "Lifetime in seconds"
+          },
+          "user": {
+            "$ref": "#/components/schemas/UserDto"
+          }
+        },
+        "required": [
+          "accessToken",
+          "tokenType",
+          "expiresIn",
+          "user"
+        ]
+      },
+      "Permission": {
+        "type": "string",
+        "enum": [
+          "PRODUCTS_READ",
+          "PRODUCTS_WRITE",
+          "CATEGORIES_READ",
+          "CATEGORIES_WRITE",
+          "AUDIT_READ",
+          "API_CLIENTS_MANAGE"
+        ]
+      },
+      "PrincipalDto": {
+        "type": "object",
+        "properties": {
+          "type": {
+            "type": "string",
+            "enum": [
+              "USER",
+              "AGENT"
+            ]
+          },
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "label": {
+            "type": "string",
+            "example": "catalog-agent",
+            "description": "User e-mail or agent name"
+          },
+          "role": {
+            "nullable": true,
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/Role"
+              }
+            ]
+          },
+          "permissions": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Permission"
+            }
+          }
+        },
+        "required": [
+          "type",
+          "id",
+          "label",
+          "role",
+          "permissions"
+        ]
+      },
+      "CreateApiClientDto": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "example": "pricing-agent",
+            "minLength": 2,
+            "maxLength": 100
+          },
+          "permissions": {
+            "type": "array",
+            "example": [
+              "PRODUCTS_READ",
+              "CATEGORIES_READ",
+              "CATEGORIES_WRITE"
+            ],
+            "description": "Least privilege: grant only what the agent needs. API_CLIENTS_MANAGE is never assignable.",
+            "items": {
+              "type": "string",
+              "enum": [
+                "PRODUCTS_READ",
+                "PRODUCTS_WRITE",
+                "CATEGORIES_READ",
+                "CATEGORIES_WRITE",
+                "AUDIT_READ"
+              ]
+            }
+          },
+          "expiresAt": {
+            "type": "string",
+            "example": "2027-01-01T00:00:00.000Z",
+            "description": "Optional expiry (must be in the future)"
+          }
+        },
+        "required": [
+          "name",
+          "permissions"
+        ]
+      },
+      "CreatedApiClientDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "name": {
+            "type": "string",
+            "example": "catalog-agent"
+          },
+          "keyPrefix": {
+            "type": "string",
+            "example": "catalog1",
+            "description": "Public, non-secret part of the key"
+          },
+          "permissions": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Permission"
+            }
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "active",
+              "revoked",
+              "expired"
+            ]
+          },
+          "expiresAt": {
+            "format": "date-time",
+            "type": "string",
+            "nullable": true
+          },
+          "revokedAt": {
+            "format": "date-time",
+            "type": "string",
+            "nullable": true
+          },
+          "lastUsedAt": {
+            "format": "date-time",
+            "type": "string",
+            "nullable": true
+          },
+          "createdById": {
+            "type": "string",
+            "nullable": true,
+            "format": "uuid"
+          },
+          "createdAt": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "apiKey": {
+            "type": "string",
+            "example": "zk_1a2b3c4d_Qm9yZ2V0LW1lLW5vdC10aGlzLWlzLW9ubHktYW4tZXhhbXBsZQ",
+            "description": "The plaintext key. Returned ONLY in this response; store it securely."
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "keyPrefix",
+          "permissions",
+          "status",
+          "expiresAt",
+          "revokedAt",
+          "lastUsedAt",
+          "createdById",
+          "createdAt",
+          "apiKey"
+        ]
+      },
+      "ApiClientDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "name": {
+            "type": "string",
+            "example": "catalog-agent"
+          },
+          "keyPrefix": {
+            "type": "string",
+            "example": "catalog1",
+            "description": "Public, non-secret part of the key"
+          },
+          "permissions": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Permission"
+            }
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "active",
+              "revoked",
+              "expired"
+            ]
+          },
+          "expiresAt": {
+            "format": "date-time",
+            "type": "string",
+            "nullable": true
+          },
+          "revokedAt": {
+            "format": "date-time",
+            "type": "string",
+            "nullable": true
+          },
+          "lastUsedAt": {
+            "format": "date-time",
+            "type": "string",
+            "nullable": true
+          },
+          "createdById": {
+            "type": "string",
+            "nullable": true,
+            "format": "uuid"
+          },
+          "createdAt": {
+            "format": "date-time",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "keyPrefix",
+          "permissions",
+          "status",
+          "expiresAt",
+          "revokedAt",
+          "lastUsedAt",
+          "createdById",
+          "createdAt"
+        ]
+      },
+      "PaginatedApiClientDto": {
+        "type": "object",
+        "properties": {
+          "data": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ApiClientDto"
+            }
+          },
+          "meta": {
+            "$ref": "#/components/schemas/PaginationMetaDto"
+          }
+        },
+        "required": [
+          "data",
+          "meta"
+        ]
+      },
+      "CategoryDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "name": {
+            "type": "string",
+            "example": "Electronics"
+          },
+          "slug": {
+            "type": "string",
+            "example": "electronics",
+            "description": "Derived from name; unique"
+          },
+          "description": {
+            "type": "string",
+            "example": "Devices, gadgets and accessories."
+          },
+          "productCount": {
+            "type": "number",
+            "example": 12
+          },
+          "createdAt": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "updatedAt": {
+            "format": "date-time",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "slug",
+          "description",
+          "productCount",
+          "createdAt",
+          "updatedAt"
+        ]
+      },
+      "PaginatedCategoryDto": {
+        "type": "object",
+        "properties": {
+          "data": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/CategoryDto"
+            }
+          },
+          "meta": {
+            "$ref": "#/components/schemas/PaginationMetaDto"
+          }
+        },
+        "required": [
+          "data",
+          "meta"
+        ]
+      },
+      "ProductSummaryDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "sku": {
+            "type": "string",
+            "example": "ELEC-HEADPHONES-01"
+          },
+          "name": {
+            "type": "string",
+            "example": "Wireless Noise-Cancelling Headphones"
+          },
+          "price": {
+            "type": "string",
+            "example": "199.99",
+            "description": "Decimal string (2 dp) to avoid float rounding"
+          },
+          "isActive": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "id",
+          "sku",
+          "name",
+          "price",
+          "isActive"
+        ]
+      },
+      "CategoryDetailDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "name": {
+            "type": "string",
+            "example": "Electronics"
+          },
+          "slug": {
+            "type": "string",
+            "example": "electronics",
+            "description": "Derived from name; unique"
+          },
+          "description": {
+            "type": "string",
+            "example": "Devices, gadgets and accessories."
+          },
+          "productCount": {
+            "type": "number",
+            "example": 12
+          },
+          "createdAt": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "updatedAt": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "products": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ProductSummaryDto"
+            }
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "slug",
+          "description",
+          "productCount",
+          "createdAt",
+          "updatedAt",
+          "products"
+        ]
+      },
+      "CreateCategoryDto": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "example": "Toys & Games",
+            "minLength": 2,
+            "maxLength": 100
+          },
+          "description": {
+            "type": "string",
+            "example": "Board games, puzzles and toys for all ages.",
+            "maxLength": 2000
+          },
+          "productIds": {
+            "maxItems": 500,
+            "description": "Products to link on creation. Duplicates are ignored; unknown ids -> 422.",
+            "type": "array",
+            "items": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        },
+        "required": [
+          "name",
+          "description"
+        ]
+      },
+      "UpdateCategoryDto": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "example": "Toys & Games",
+            "minLength": 2,
+            "maxLength": 100
+          },
+          "description": {
+            "type": "string",
+            "example": "Board games, puzzles and toys for all ages.",
+            "maxLength": 2000
+          }
+        }
+      },
+      "UpdateCategoryProductsDto": {
+        "type": "object",
+        "properties": {
+          "add": {
+            "description": "Product ids to link",
+            "type": "array",
+            "items": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          "remove": {
+            "description": "Product ids to unlink",
+            "type": "array",
+            "items": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        }
+      },
+      "CategoryProductsResultDto": {
+        "type": "object",
+        "properties": {
+          "categoryId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "productIds": {
+            "description": "Final set of linked product ids (sorted)",
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "added": {
+            "description": "Links created by this request",
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "removed": {
+            "description": "Links removed by this request",
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        },
+        "required": [
+          "categoryId",
+          "productIds",
+          "added",
+          "removed"
+        ]
+      },
+      "SetCategoryProductsDto": {
+        "type": "object",
+        "properties": {
+          "productIds": {
+            "description": "The complete set of products for the category ([] removes all links)",
+            "type": "array",
+            "items": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        },
+        "required": [
+          "productIds"
+        ]
+      },
+      "CategorySummaryDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "name": {
+            "type": "string",
+            "example": "Electronics"
+          },
+          "slug": {
+            "type": "string",
+            "example": "electronics"
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "slug"
+        ]
+      },
+      "ProductDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "sku": {
+            "type": "string",
+            "example": "ELEC-HEADPHONES-01"
+          },
+          "name": {
+            "type": "string",
+            "example": "Wireless Noise-Cancelling Headphones"
+          },
+          "description": {
+            "type": "string",
+            "example": "Over-ear Bluetooth headphones with 30h battery life."
+          },
+          "price": {
+            "type": "string",
+            "example": "199.99",
+            "description": "Decimal string with 2 decimal places"
+          },
+          "stock": {
+            "type": "number",
+            "example": 42
+          },
+          "isActive": {
+            "type": "boolean"
+          },
+          "categories": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/CategorySummaryDto"
+            }
+          },
+          "createdAt": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "updatedAt": {
+            "format": "date-time",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "sku",
+          "name",
+          "description",
+          "price",
+          "stock",
+          "isActive",
+          "categories",
+          "createdAt",
+          "updatedAt"
+        ]
+      },
+      "PaginatedProductDto": {
+        "type": "object",
+        "properties": {
+          "data": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ProductDto"
+            }
+          },
+          "meta": {
+            "$ref": "#/components/schemas/PaginationMetaDto"
+          }
+        },
+        "required": [
+          "data",
+          "meta"
+        ]
+      },
+      "CreateProductDto": {
+        "type": "object",
+        "properties": {
+          "sku": {
+            "type": "string",
+            "example": "TOY-PUZZLE-1000",
+            "description": "Stock keeping unit; normalised to upper case, unique",
+            "pattern": "^[A-Z0-9][A-Z0-9_-]{1,63}$"
+          },
+          "name": {
+            "type": "string",
+            "example": "1000-piece Jigsaw Puzzle",
+            "minLength": 2,
+            "maxLength": 200
+          },
+          "description": {
+            "type": "string",
+            "example": "Landscape jigsaw puzzle, 70x50cm.",
+            "maxLength": 5000
+          },
+          "price": {
+            "type": "number",
+            "example": 24.99,
+            "minimum": 0,
+            "maximum": 9999999999.99,
+            "description": "JSON number with at most 2 decimal places. Returned as a decimal string."
+          },
+          "stock": {
+            "type": "number",
+            "example": 100,
+            "minimum": 0,
+            "default": 0
+          },
+          "isActive": {
+            "type": "boolean",
+            "default": true
+          },
+          "categoryIds": {
+            "maxItems": 50,
+            "description": "Categories to link. On update, replaces the full set when provided.",
+            "type": "array",
+            "items": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        },
+        "required": [
+          "sku",
+          "name",
+          "description",
+          "price"
+        ]
+      },
+      "UpdateProductDto": {
+        "type": "object",
+        "properties": {
+          "sku": {
+            "type": "string",
+            "example": "TOY-PUZZLE-1000",
+            "description": "Stock keeping unit; normalised to upper case, unique",
+            "pattern": "^[A-Z0-9][A-Z0-9_-]{1,63}$"
+          },
+          "name": {
+            "type": "string",
+            "example": "1000-piece Jigsaw Puzzle",
+            "minLength": 2,
+            "maxLength": 200
+          },
+          "description": {
+            "type": "string",
+            "example": "Landscape jigsaw puzzle, 70x50cm.",
+            "maxLength": 5000
+          },
+          "price": {
+            "type": "number",
+            "example": 24.99,
+            "minimum": 0,
+            "maximum": 9999999999.99,
+            "description": "JSON number with at most 2 decimal places. Returned as a decimal string."
+          },
+          "stock": {
+            "type": "number",
+            "example": 100,
+            "minimum": 0,
+            "default": 0
+          },
+          "isActive": {
+            "type": "boolean",
+            "default": true
+          },
+          "categoryIds": {
+            "maxItems": 50,
+            "description": "Categories to link. On update, replaces the full set when provided.",
+            "type": "array",
+            "items": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        }
+      }
+    }
+  }
+}
