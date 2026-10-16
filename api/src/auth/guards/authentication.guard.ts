@@ -1,6 +1,7 @@
 import { CanActivate, ExecutionContext, Injectable, UnauthorizedException } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
 import type { Request } from 'express';
+import { AuditFailureRecorder } from '../../audit/audit-failure.recorder';
 import { AuthService } from '../auth.service';
 import { IS_PUBLIC_KEY } from '../decorators';
 import { extractCredential } from './credentials';
@@ -11,6 +12,7 @@ export class AuthenticationGuard implements CanActivate {
   constructor(
     private readonly reflector: Reflector,
     private readonly auth: AuthService,
+    private readonly auditFailures: AuditFailureRecorder,
   ) {}
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
@@ -22,13 +24,17 @@ export class AuthenticationGuard implements CanActivate {
     if (isPublic) return true;
 
     const req = context.switchToHttp().getRequest<Request>();
-    const credential = extractCredential(req);
-    if (!credential) throw new UnauthorizedException('Authentication required');
-
-    req.principal =
-      credential.kind === 'api-key'
-        ? await this.auth.authenticateApiKey(credential.value)
-        : await this.auth.authenticateAccessToken(credential.value);
-    return true;
+    try {
+      const credential = extractCredential(req);
+      if (!credential) throw new UnauthorizedException('Authentication required');
+      req.principal =
+        credential.kind === 'api-key'
+          ? await this.auth.authenticateApiKey(credential.value)
+          : await this.auth.authenticateAccessToken(credential.value);
+      return true;
+    } catch (error) {
+      await this.auditFailures.record(context, error);
+      throw error;
+    }
   }
 }

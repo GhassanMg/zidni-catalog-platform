@@ -6,7 +6,11 @@ import {
   ApiTags,
 } from '@nestjs/swagger';
 import { Throttle } from '@nestjs/throttler';
+import { AuditAction, AuditResource } from '@prisma/client';
+import { Audited } from '../audit/audited.decorator';
 import { ApiErrors } from '../common/decorators/api-errors.decorator';
+import { ReqCtx } from '../common/request-context';
+import type { RequestContext } from '../common/request-context';
 import { UserDto } from '../users/dto/user.dto';
 import { AuthService } from './auth.service';
 import { ApiAuth, CurrentPrincipal, Public } from './decorators';
@@ -23,11 +27,12 @@ export class AuthController {
   @Post('register')
   @Public()
   @Throttle(AUTH_THROTTLE)
+  @Audited(AuditResource.USER, AuditAction.CREATE)
   @ApiOperation({ summary: 'Self-register a normal (read-only) user account' })
   @ApiCreatedResponse({ type: UserDto })
   @ApiErrors(400, 409, 429)
-  register(@Body() dto: RegisterDto): Promise<UserDto> {
-    return this.auth.register(dto);
+  register(@Body() dto: RegisterDto, @ReqCtx() ctx: RequestContext): Promise<UserDto> {
+    return this.auth.register(dto, ctx);
   }
 
   @Post('login')

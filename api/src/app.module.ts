@@ -2,10 +2,12 @@ import { randomUUID } from 'node:crypto';
 import type { IncomingMessage, ServerResponse } from 'node:http';
 import { Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
-import { APP_FILTER, APP_GUARD, APP_PIPE } from '@nestjs/core';
+import { APP_FILTER, APP_GUARD, APP_INTERCEPTOR, APP_PIPE } from '@nestjs/core';
 import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler';
 import { LoggerModule } from 'nestjs-pino';
 import { ApiClientsModule } from './api-clients/api-clients.module';
+import { AuditFailureInterceptor } from './audit/audit-failure.interceptor';
+import { AuditModule } from './audit/audit.module';
 import { AuthModule } from './auth/auth.module';
 import { AuthenticationGuard } from './auth/guards/authentication.guard';
 import { PermissionsGuard } from './auth/guards/permissions.guard';
@@ -63,6 +65,7 @@ function requestId(req: IncomingMessage, res: ServerResponse): string {
       }),
     }),
     PrismaModule,
+    AuditModule,
     UsersModule,
     AuthModule,
     ApiClientsModule,
@@ -75,6 +78,7 @@ function requestId(req: IncomingMessage, res: ServerResponse): string {
     { provide: APP_GUARD, useClass: ThrottlerGuard },
     { provide: APP_GUARD, useClass: AuthenticationGuard },
     { provide: APP_GUARD, useClass: PermissionsGuard },
+    { provide: APP_INTERCEPTOR, useClass: AuditFailureInterceptor },
   ],
 })
 export class AppModule {}

@@ -7,8 +7,10 @@ import {
 } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
-import { Role } from '@prisma/client';
+import { AuditAction, AuditResource, Role } from '@prisma/client';
 import * as bcrypt from 'bcryptjs';
+import { AuditService } from '../audit/audit.service';
+import type { RequestContext } from '../common/request-context';
 import type { Env } from '../config/env';
 import { PrismaService } from '../prisma/prisma.service';
 import { toUserDto, UserDto } from '../users/dto/user.dto';
@@ -37,6 +39,7 @@ export class AuthService implements OnModuleInit {
     private readonly prisma: PrismaService,
     private readonly users: UsersService,
     private readonly jwt: JwtService,
+    private readonly audit: AuditService,
     config: ConfigService<Env, true>,
   ) {
     this.bcryptRounds = config.get('BCRYPT_ROUNDS', { infer: true });
@@ -47,16 +50,26 @@ export class AuthService implements OnModuleInit {
     this.dummyHash = bcrypt.hashSync('timing-equaliser-not-a-real-password', this.bcryptRounds);
   }
 
-  async register(dto: RegisterDto): Promise<UserDto> {
+  async register(dto: RegisterDto, ctx: RequestContext): Promise<UserDto> {
     if (Buffer.byteLength(dto.password, 'utf8') > 72) {
       throw new BadRequestException('password must not exceed 72 bytes');
     }
     const passwordHash = await bcrypt.hash(dto.password, this.bcryptRounds);
-    // Self-registration can only ever create a normal user; admins are provisioned out-of-band.
-    const user = await this.prisma.user.create({
-      data: { email: dto.email, name: dto.name, passwordHash, role: Role.USER },
+    return this.prisma.$transaction(async (tx) => {
+      // Self-registration can only ever create a normal user; admins are provisioned out-of-band.
+      const user = await tx.user.create({
+        data: { email: dto.email, name: dto.name, passwordHash, role: Role.USER },
+      });
+      const snapshot = toUserDto(user);
+      await this.audit.record(tx, ctx, {
+        action: AuditAction.CREATE,
+        resourceType: AuditResource.USER,
+        resourceId: user.id,
+        changes: { after: snapshot },
+        actor: { type: 'USER', id: user.id, label: user.email },
+      });
+      return snapshot;
     });
-    return toUserDto(user);
   }
 
   async login(dto: LoginDto): Promise<TokenResponseDto> {

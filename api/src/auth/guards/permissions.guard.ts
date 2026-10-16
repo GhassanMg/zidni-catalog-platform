@@ -7,14 +7,18 @@ import {
 } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
 import type { Request } from 'express';
+import { AuditFailureRecorder } from '../../audit/audit-failure.recorder';
 import { PERMISSIONS_KEY } from '../decorators';
 import { Permission } from '../permissions';
 
 @Injectable()
 export class PermissionsGuard implements CanActivate {
-  constructor(private readonly reflector: Reflector) {}
+  constructor(
+    private readonly reflector: Reflector,
+    private readonly auditFailures: AuditFailureRecorder,
+  ) {}
 
-  canActivate(context: ExecutionContext): boolean {
+  async canActivate(context: ExecutionContext): Promise<boolean> {
     if (context.getType() !== 'http') return true;
     const required =
       this.reflector.getAllAndOverride<Permission[]>(PERMISSIONS_KEY, [
@@ -28,10 +32,12 @@ export class PermissionsGuard implements CanActivate {
 
     const missing = required.filter((permission) => !principal.permissions.includes(permission));
     if (missing.length > 0) {
-      throw new ForbiddenException({
+      const error = new ForbiddenException({
         message: `Missing required permission: ${missing.join(', ')}`,
         details: { required, missing },
       });
+      await this.auditFailures.record(context, error);
+      throw error;
     }
     return true;
   }

@@ -1,4 +1,6 @@
 import { BadRequestException, ConflictException, Injectable, NotFoundException } from '@nestjs/common';
+import { AuditAction, AuditResource } from '@prisma/client';
+import { AuditService } from '../audit/audit.service';
 import { generateApiKey } from '../auth/api-key';
 import { paginate, Paginated, PaginationQueryDto, skipTake } from '../common/dto/pagination.dto';
 import type { RequestContext } from '../common/request-context';
@@ -12,7 +14,10 @@ import {
 
 @Injectable()
 export class ApiClientsService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly audit: AuditService,
+  ) {}
 
   async create(dto: CreateApiClientDto, ctx: RequestContext): Promise<CreatedApiClientDto> {
     const expiresAt = dto.expiresAt ? new Date(dto.expiresAt) : null;
@@ -20,17 +25,28 @@ export class ApiClientsService {
       throw new BadRequestException('expiresAt must be in the future');
     }
     const { key, prefix, hash } = generateApiKey();
-    const client = await this.prisma.apiClient.create({
-      data: {
-        name: dto.name,
-        keyPrefix: prefix,
-        keyHash: hash,
-        permissions: dto.permissions,
-        expiresAt,
-        createdById: ctx.actor?.type === 'USER' ? ctx.actor.id : null,
-      },
+
+    return this.prisma.$transaction(async (tx) => {
+      const client = await tx.apiClient.create({
+        data: {
+          name: dto.name,
+          keyPrefix: prefix,
+          keyHash: hash,
+          permissions: dto.permissions,
+          expiresAt,
+          createdById: ctx.actor?.type === 'USER' ? ctx.actor.id : null,
+        },
+      });
+      const snapshot = toApiClientDto(client);
+      // The snapshot never contains key material (only the public prefix).
+      await this.audit.record(tx, ctx, {
+        action: AuditAction.CREATE,
+        resourceType: AuditResource.API_CLIENT,
+        resourceId: client.id,
+        changes: { after: snapshot },
+      });
+      return { ...snapshot, apiKey: key };
     });
-    return { ...toApiClientDto(client), apiKey: key };
   }
 
   async list(query: PaginationQueryDto): Promise<Paginated<ApiClientDto>> {
@@ -46,10 +62,21 @@ export class ApiClientsService {
     );
   }
 
-  async revoke(id: string): Promise<void> {
-    const client = await this.prisma.apiClient.findUnique({ where: { id } });
-    if (!client) throw new NotFoundException('API client not found');
-    if (client.revokedAt) throw new ConflictException('API client is already revoked');
-    await this.prisma.apiClient.update({ where: { id }, data: { revokedAt: new Date() } });
+  async revoke(id: string, ctx: RequestContext): Promise<void> {
+    await this.prisma.$transaction(async (tx) => {
+      const client = await tx.apiClient.findUnique({ where: { id } });
+      if (!client) throw new NotFoundException('API client not found');
+      if (client.revokedAt) throw new ConflictException('API client is already revoked');
+      const revoked = await tx.apiClient.update({
+        where: { id, revokedAt: null },
+        data: { revokedAt: new Date() },
+      });
+      await this.audit.record(tx, ctx, {
+        action: AuditAction.REVOKE,
+        resourceType: AuditResource.API_CLIENT,
+        resourceId: id,
+        changes: { before: toApiClientDto(client), after: toApiClientDto(revoked) },
+      });
+    });
   }
 }
