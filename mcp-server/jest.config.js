@@ -4,6 +4,6 @@ module.exports = {
   testRegex: '(src|test)/.*\\.spec\\.ts$',
   moduleFileExtensions: ['ts', 'js', 'json'],
   transform: {
-    '^.+\\.ts$': ['ts-jest', { isolatedModules: true }],
+    '^.+\\.ts$': 'ts-jest',
   },
 };
