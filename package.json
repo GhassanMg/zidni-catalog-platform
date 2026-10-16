@@ -1,0 +1,28 @@
+{
+  "name": "zidni-catalog-platform",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Product & category management API (NestJS + PostgreSQL) with an MCP server for AI agents",
+  "workspaces": [
+    "mcp-server",
+    "api"
+  ],
+  "engines": {
+    "node": ">=20.11"
+  },
+  "scripts": {
+    "build": "npm run build -w mcp-server && npm run build -w api",
+    "db:up": "docker compose up -d postgres",
+    "db:migrate": "npm run prisma:deploy -w api",
+    "db:seed": "npm run seed -w api",
+    "dev:api": "npm run start:dev -w api",
+    "dev:mcp": "npm run dev -w mcp-server",
+    "lint": "npm run lint -w api && npm run lint -w mcp-server",
+    "typecheck": "npm run typecheck -w api && npm run typecheck -w mcp-server",
+    "test": "npm run test -w mcp-server && npm run test -w api",
+    "test:e2e": "npm run test:e2e -w api",
+    "test:mcp": "npm run test:mcp -w api",
+    "test:all": "npm run test && npm run test:e2e && npm run test:mcp",
+    "openapi:export": "npm run openapi:export -w api"
+  }
+}
