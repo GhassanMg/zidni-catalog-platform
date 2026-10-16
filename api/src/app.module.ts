@@ -10,6 +10,8 @@ import { AuditFailureInterceptor } from './audit/audit-failure.interceptor';
 import { AuditModule } from './audit/audit.module';
 import { AuthModule } from './auth/auth.module';
 import { AuthenticationGuard } from './auth/guards/authentication.guard';
+import { CategoriesModule } from './categories/categories.module';
+import { ProductsModule } from './products/products.module';
 import { PermissionsGuard } from './auth/guards/permissions.guard';
 import { AllExceptionsFilter } from './common/filters/all-exceptions.filter';
 import { createValidationPipe } from './common/pipes/validation.pipe';
@@ -69,6 +71,8 @@ function requestId(req: IncomingMessage, res: ServerResponse): string {
     UsersModule,
     AuthModule,
     ApiClientsModule,
+    CategoriesModule,
+    ProductsModule,
     HealthModule,
   ],
   providers: [
