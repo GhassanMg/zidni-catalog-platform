@@ -23,6 +23,7 @@
     "test:e2e": "npm run test:e2e -w api",
     "test:mcp": "npm run test:mcp -w api",
     "test:all": "npm run test && npm run test:e2e && npm run test:mcp",
-    "openapi:export": "npm run openapi:export -w api"
+    "openapi:export": "npm run openapi:export -w api",
+    "docs:export": "npm run openapi:export && npm run tools:export -w mcp-server"
   }
 }
