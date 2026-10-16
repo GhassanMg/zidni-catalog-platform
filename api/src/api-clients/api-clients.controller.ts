@@ -17,7 +17,8 @@ import {
   ApiOperation,
   ApiTags,
 } from '@nestjs/swagger';
-import { Permission } from '@prisma/client';
+import { AuditAction, AuditResource, Permission } from '@prisma/client';
+import { Audited } from '../audit/audited.decorator';
 import { ApiAuth, RequirePermissions } from '../auth/decorators';
 import { ApiErrors } from '../common/decorators/api-errors.decorator';
 import { PaginatedResponseDto, PaginationQueryDto } from '../common/dto/pagination.dto';
@@ -34,6 +35,7 @@ export class ApiClientsController {
 
   @Post()
   @RequirePermissions(Permission.API_CLIENTS_MANAGE)
+  @Audited(AuditResource.API_CLIENT, AuditAction.CREATE)
   @ApiOperation({ summary: 'Issue an API key for an AI agent (the key is returned once)' })
   @ApiCreatedResponse({ type: CreatedApiClientDto })
   @ApiErrors(400, 409)
@@ -53,10 +55,14 @@ export class ApiClientsController {
   @Delete(':id')
   @HttpCode(HttpStatus.NO_CONTENT)
   @RequirePermissions(Permission.API_CLIENTS_MANAGE)
+  @Audited(AuditResource.API_CLIENT, AuditAction.REVOKE)
   @ApiOperation({ summary: 'Revoke an agent API key (takes effect immediately)' })
   @ApiNoContentResponse()
   @ApiErrors(400, 404, 409)
-  async revoke(@Param('id', ParseUUIDPipe) id: string): Promise<void> {
-    await this.apiClients.revoke(id);
+  async revoke(
+    @Param('id', ParseUUIDPipe) id: string,
+    @ReqCtx() ctx: RequestContext,
+  ): Promise<void> {
+    await this.apiClients.revoke(id, ctx);
   }
 }
