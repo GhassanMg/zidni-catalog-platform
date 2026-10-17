@@ -45,6 +45,9 @@ docker compose up --build -d
 | MCP (Streamable HTTP) | http://localhost:3001/mcp |
 | PostgreSQL | `localhost:5433` (user/password/db: `zidni`) |
 
+Optional database GUI: `docker compose --profile tools up -d pgadmin` → http://localhost:5050
+(`admin@zidni.com` / `admin`, the Zidni server is pre-registered; its DB password is `zidni`).
+
 On start the API applies migrations and runs an idempotent seed. Ports clash? Copy
 [`.env.example`](.env.example) to `.env` and change `API_PORT`, `MCP_PORT` or `POSTGRES_PORT`.
 
