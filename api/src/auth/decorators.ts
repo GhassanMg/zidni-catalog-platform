@@ -5,10 +5,17 @@ import { ApiErrors } from '../common/decorators/api-errors.decorator';
 import { Permission } from './permissions';
 
 export const IS_PUBLIC_KEY = 'auth:public';
+export const ALLOW_AUTHENTICATED_KEY = 'auth:allow-authenticated';
 export const PERMISSIONS_KEY = 'auth:permissions';
 
 /** Opts a route out of authentication (the global guard is deny-by-default). */
 export const Public = () => SetMetadata(IS_PUBLIC_KEY, true);
+
+/**
+ * Any authenticated principal may call this route; no specific permission is required.
+ * The only current use is `GET /auth/me`, which describes the caller.
+ */
+export const AllowAuthenticated = () => SetMetadata(ALLOW_AUTHENTICATED_KEY, true);
 
 /** Route requires ALL listed permissions. Also documented in OpenAPI as `x-required-permissions`. */
 export const RequirePermissions = (...permissions: Permission[]) =>

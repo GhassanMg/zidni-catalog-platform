@@ -104,9 +104,19 @@ every agent request.
   `CATEGORIES_WRITE` — it cannot touch products themselves.
 - `API_CLIENTS_MANAGE` can **never** be granted to an agent (validated in the DTO): an agent that
   could mint keys could escalate its own privileges.
-- **Deny by default:** the authentication guard is global; only routes marked `@Public()`
-  (login, register, health) skip it. Each operation declares `@RequirePermissions(...)`, which is
-  also published in OpenAPI as `x-required-permissions`.
+- **Deny by default, for authentication and authorization.** I decided a route with no access
+  decorator is closed. Authentication already worked that way: the guard is global, and only
+  `@Public()` (login, register, health) skips it. Authorization did not. `PermissionsGuard` used
+  to allow any authenticated caller when `@RequirePermissions` was missing, so one forgotten
+  decorator would expose the endpoint. The endpoint × principal matrix would not catch that for a
+  route it does not already list. The guard now requires an explicit policy:
+  - `@Public()` — no credential.
+  - `@AllowAuthenticated()` — any logged-in user or agent, no specific permission. I use this only
+    on `GET /auth/me`, which has to describe whoever is calling.
+  - `@RequirePermissions(...)` — every other operation, published in OpenAPI as
+    `x-required-permissions`.
+  A handler with none of these is rejected with 403. If `@AllowAuthenticated()` and
+  `@RequirePermissions(...)` are both present, the permissions win.
 
 **Why permissions instead of `@Roles('ADMIN')`:** humans and agents share one model. An agent is
 not "an admin" or "a user" — it is a set of capabilities. New roles (e.g. "catalog editor") become
@@ -230,7 +240,8 @@ Details and schemas: [MCP.md](MCP.md).
 
 ## 10. Security checklist
 
-- Authentication on every route by default; permission check on every operation.
+- Authentication and authorization are both deny-by-default. A route with no `@Public()`,
+  `@AllowAuthenticated()`, or `@RequirePermissions()` decorator is rejected.
 - Least privilege for agents; agents can never manage credentials; humans cannot self-assign roles.
 - Secrets: bcrypt (passwords), SHA-256 (high-entropy keys), keys shown once, credentials redacted
   from logs (`authorization`, `x-api-key`, `cookie`).

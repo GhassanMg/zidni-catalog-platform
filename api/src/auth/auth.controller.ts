@@ -13,7 +13,7 @@ import { ReqCtx } from '../common/request-context';
 import type { RequestContext } from '../common/request-context';
 import { UserDto } from '../users/dto/user.dto';
 import { AuthService } from './auth.service';
-import { ApiAuth, CurrentPrincipal, Public } from './decorators';
+import { AllowAuthenticated, ApiAuth, CurrentPrincipal, Public } from './decorators';
 import { LoginDto, PrincipalDto, RegisterDto, TokenResponseDto } from './dto/auth.dto';
 import type { Principal } from './principal';
 
@@ -47,6 +47,7 @@ export class AuthController {
   }
 
   @Get('me')
+  @AllowAuthenticated()
   @ApiAuth()
   @ApiOperation({ summary: 'Describe the calling identity (user or agent) and its permissions' })
   @ApiOkResponse({ type: PrincipalDto })
