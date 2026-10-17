@@ -230,6 +230,15 @@ Details and schemas: [MCP.md](MCP.md).
 - **Start reliably:** DB connection retried with exponential backoff; compose healthchecks +
   `depends_on: service_healthy` order postgres → api → mcp-server; migrations applied on container
   start (`prisma migrate deploy` is idempotent); seed is idempotent.
+- **Demo credentials belong to this evaluation stack only.** `docker compose up` runs the
+  production image (`NODE_ENV=production`) and sets `SEED_ALLOW_PRODUCTION=true`, so the admin,
+  user, and agent keys published in the README exist after one command. The seed script otherwise
+  refuses to run when `NODE_ENV` is `production`. I kept this as the only Compose file on purpose.
+  A reviewer clones the repo and runs that command; those passwords are how they log in. A real
+  server would not use this file. It would not seed demo users, and it would refuse to start until
+  `JWT_SECRET`, the database password, and the admin and agent credentials were set to values other
+  than the published defaults. I did not add a second Compose file for that, so the evaluation path
+  stays the one command in the README.
 - **Health:** `/health/live` (process) and `/health/ready` (`SELECT 1` with a 2 s timeout → 503),
   used by the Docker healthcheck.
 - **Graceful shutdown** hooks close the HTTP server and DB pool.
