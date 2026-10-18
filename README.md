@@ -38,6 +38,8 @@ REST call made with the agent's own key, so it cannot bypass anything by constru
 docker compose up --build -d
 ```
 
+The first build takes about 5–10 minutes on Docker Desktop. Later `docker compose up` commands reuse those images and finish in seconds.
+
 | Service | URL |
 | --- | --- |
 | Swagger UI | http://localhost:3000/api/docs (raw spec: `/api/docs-json`) |
